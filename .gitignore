@@ -1,0 +1,8 @@
+*.deb
+*.swp
+/bin
+/lib/*.a
+/lib/*.o
+/pkg
+/vendor/pkg
+
