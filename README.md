@@ -93,7 +93,7 @@ In the Prometheus Go client you can not register a metric with the same **name**
 
 We currently offer two flavors of PHP clients for Pushprom:
 * [PHP](https://github.com/messagebird/pushprom-php-client)
-* [Yii 2](https://github.com/messagebird/pushprom-yii2-client).
+* [Yii 2](https://github.com/messagebird/pushprom-yii2-client)
 
 ## Alternatives
 
@@ -103,14 +103,10 @@ We currently offer two flavors of PHP clients for Pushprom:
 
 # Tests
 
-```
-go tests
+```bash
+make test
 ```
 
 ## License
 
 Pushprom is licensed under [The BSD 2-Clause License](http://opensource.org/licenses/BSD-2-Clause). Copyright (c) 2016, MessageBird
-
-
-
-
