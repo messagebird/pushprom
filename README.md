@@ -1,32 +1,36 @@
 
 # Pushprom
 
-Pushprom is a proxy (http/udp) to the prometheus go client. But why you need a proxy? Prometheus doesn't offers a php client and php clients are hard to implement because they would need to "hold state" (to count things for example) and php/apache setups don't encorage that.
+Pushprom is a proxy (HTTP/UDP) to the [Prometheus](https://prometheus.io/) Go client.
 
-Pushprom is different from [pushgateway](https://github.com/prometheus/pushgateway) because it's an aggregator. Pushgateway just "stores" the state.
+Prometheus doesn't offer a PHP client and PHP clients are hard to implement because they would need to keep track of state and PHP setups generally don't encourage that. That's why we built Pushprom.
 
-We offer two flavors of php clients for it. [Vanilla](https://github.com/messagebird/pushprom-php-client) and [Yii2](https://github.com/messagebird/pushprom-yii2-client).
+## Installing
 
-It accepts http and udp requests. The payloads are in json. Here is a full example:
+Execute the following command:
 
-
-```json
-{
-        "type":   "gauge",
-        "name":   "trees",
-        "help":   "the amount of trees in the forest.",
-        "method": "add",
-        "value":  3002,
-        "labels": {
-                "species": "araucaria angustifolia",
-                "job": "tree-counter-bot"
-        }
-}
+```bash
+make release
 ```
 
-When pushprom receives this payload (from now on called Delta) it tries to register the metric with type **Gauge** named **trees** and then apply the operation **add** with value **3002** on it.
+Or, alternatively, to build a Docker container:
 
-# Usage
+```bash
+make container
+```
+
+## Usage
+
+Running Pushprom is as easy as executing `pushprom` on the command line.
+
+```
+$ pushprom
+2016/01/15 16:35:25 main.go:26: exposing metrics on http://127.0.0.1::9092/metrics
+2016/01/15 16:35:25 http.go:34: listening for stats on http://127.0.0.1:9091
+2016/01/15 16:35:25 udp.go:10: listening for stats UDP on port :9090
+```
+
+Use the `-h` flag to get help information.
 
 ```
 $ pushprom -h
@@ -39,49 +43,74 @@ Usage of bin/pushprom:
         The address to listen on for udp stats requests. (default ":9090")
 ```
 
-run it:
+Pushprom accepts HTTP and UDP requests. The payloads are in JSON. Here is a full example:
 
+```json
+{
+      "type": "gauge",
+      "name": "trees",
+      "help": "the amount of trees in the forest.",
+      "method": "add",
+      "value": 3002,
+      "labels": {
+            "species": "araucaria angustifolia",
+            "job": "tree-counter-bot"
+      }
+}
 ```
-$ pushprom
-2016/01/15 16:35:25 main.go:26: exposing metrics on http://127.0.0.1::9092/metrics
-2016/01/15 16:35:25 http.go:34: listening for stats on http://127.0.0.1:9091
-2016/01/15 16:35:25 udp.go:10: listening for stats UDP on port :9090
-```
 
+When Pushprom receives this payload (from now on called Delta) it tries to register the metric with type **Gauge** named **trees** and then apply the operation **add** with value **3002** on it.
 
-# Protocol support
+## Protocol support
 
-You can use http requests and udp packages to push deltas to pushprom.
+You can use HTTP requests and UDP packages to push deltas to Pushprom.
 
-## HTTP
+### HTTP
 
-When using http you should to a ```POST /```.
-
-Watch out for error messages on the response body.
+When using HTTP you should do a `POST /`.
 
 Example:
 
 ```bash
-curl -H "Content-type: application/json" -X POST -d '{"type":"conter", "name":"gophers", "help":"little burrowing rodents", "method":"inc"}' http://localhost:9091/
+curl -H "Content-type: application/json" -X POST -d '{"type": "counter", "name": "gophers", "help": "little burrowing rodents", "method": "inc"}' http://127.0.0.1:9091/
 ```
 
-## UDP
+### UDP
 
-You move fast and break things.
-
-Things may break: in the prometheus go client if you cannot register a metric with the same **name** and different **help** or **labels**. For example you
- register a metric with name "gophers" and with help "little rodents" a little later you think "but they are also burrowing animals!" and then you change the help string and push the same metric it wont work: you need to reboot pushprom.
+*You move fast and break things.*
 
 Example:
 
 ```bash
-echo "{\"type\":\"counter\", \"name\":\"gophers\", \"help\":\"little burrowing rodents\", \"method\":\"inc\"}" | nc -u -w1 127.0.0.1 9090
+echo "{\"type\": \"counter\", \"name\": \"gophers\", \"help\": \"little burrowing rodents\", \"method\": \"inc\"}" | nc -u -w1 127.0.0.1 9090
 ```
+
+## Caveats
+
+In the Prometheus Go client you can not register a metric with the same **name** and different **help** or **labels**. For example: you register a metric with name `gophers` and with help `little rodents` and a little later you think "but they are also burrowing animals!". When you change the help string and push the same metric it won't work: you need to reboot Pushprom.
+
+## Clients
+
+We currently offer two flavors of PHP clients for Pushprom:
+* [PHP](https://github.com/messagebird/pushprom-php-client)
+* [Yii 2](https://github.com/messagebird/pushprom-yii2-client).
+
+## Alternatives
+
+### Pushgateway
+
+[Pushgateway](https://github.com/prometheus/pushgateway) is a metrics cache for Prometheus. It's explicitly not an aggregator, which is the most distinct difference with Pushprom.
 
 # Tests
 
 ```
 go tests
 ```
+
+## License
+
+Pushprom is licensed under [The BSD 2-Clause License](http://opensource.org/licenses/BSD-2-Clause). Copyright (c) 2016, MessageBird
+
+
 
 
