@@ -5,36 +5,40 @@ VERSION = $(shell git rev-list HEAD | wc -l |tr -d ' ')
 HASH    = $(shell git rev-parse --short HEAD)
 
 GO      = env GOPATH="$(PWD)/vendor:$(PWD)" go
-LDFLAGS = -X main.BuildNumber=$(VERSION) -X main.CommitHash=$(HASH)
 
 all:
 	@echo "make release       # Build $(PROJECT) for release"
 	@echo "make development   # Build $(PROJECT) for development"
 	@echo
-	@echo "make run           # Run a development version of $(BINARY)"
+	@echo "make run           # Run a development version of $(PROJECT)"
 	@echo
 	@echo "make container     # Create a Docker container for $(PROJECT)"
-	@echo "make rollout       # Roll out the container to production"
 	@echo
 	@echo "make test          # Run the test suite"
 	@echo "make clean         # Clean up the project directory"
 
-release: clean
+
+release: clean dependencies
 	@echo "* Building $(PROJECT) for release"
-	@$(GO) install -ldflags '$(LDFLAGS)' $(PROJECT)/...
+	@$(GO) install $(PROJECT)/...
 
-development: clean
+release_linux: export GOOS=linux
+release_linux: export GOARCH=amd64
+release_linux: release
+	@mv bin/linux_amd64/${BINARY} bin/
+
+development: clean dependencies
 	@echo "* Building $(PROJECT) for development"
-	@$(GO) install -ldflags '$(LDFLAGS)' -race $(PROJECT)/...
-
-dependencies:
-	@echo "* go getting all dependencies into vendor/"
-	@$(GO) get -t $(PROJECT)/...
-	find vendor/ -name .git -type d | xargs rm -rf
+	@$(GO) install -race $(PROJECT)/...
 
 run: development
 	@echo "* Running development $(PROJECT) binary"
-	@./bin/$(BINARY) -mapping-config=./mapping.conf -log.level=debug
+	@./bin/$(BINARY)
+
+container: release_linux
+	@echo "* Creating $(PROJECT) Docker container"
+	@docker build -t $(PROJECT):$(VERSION) .
+	@docker tag $(PROJECT):$(VERSION) $(PROJECT):latest
 
 test:
 	@echo "* Running tests"
@@ -49,4 +53,9 @@ test:
 	@$(GO) vet $(PROJECT)/...
 
 clean:
-	rm -fr bin pkg vendor/pkg lib/*.a lib/*.o
+	rm -fr bin pkg vendor/pkg
+
+dependencies:
+	@echo "* go getting all dependencies into vendor/"
+	@$(GO) get -t $(PROJECT)/...
+	find vendor/ -name .git -type d | xargs rm -rf

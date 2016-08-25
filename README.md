@@ -25,9 +25,9 @@ Running Pushprom is as easy as executing `pushprom` on the command line.
 
 ```
 $ pushprom
-2016/01/15 16:35:25 main.go:26: exposing metrics on http://127.0.0.1::9092/metrics
-2016/01/15 16:35:25 http.go:34: listening for stats on http://127.0.0.1:9091
-2016/01/15 16:35:25 udp.go:10: listening for stats UDP on port :9090
+2016/08/25 10:43:32 http.go:36: exposing metrics on http://0.0.0.0::9091/metrics
+2016/08/25 10:43:32 udp.go:10: listening for stats UDP on port :9090
+2016/08/25 10:43:32 http.go:39: listening for stats on http://0.0.0.0:9091
 ```
 
 Use the `-h` flag to get help information.
