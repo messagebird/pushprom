@@ -1,6 +1,8 @@
 
 # Pushprom
 
+[![Build Status](https://travis-ci.org/messagebird/pushprom.svg?branch=master)](https://travis-ci.org/messagebird/pushprom)
+
 Pushprom is a proxy (HTTP/UDP) to the [Prometheus](https://prometheus.io/) Go client.
 
 Prometheus doesn't offer a PHP client and PHP clients are hard to implement because they would need to keep track of state and PHP setups generally don't encourage that. That's why we built Pushprom.
