@@ -43,14 +43,6 @@ container: release_linux
 test:
 	@echo "* Running tests"
 	@$(GO) test $(PROJECT)/...
-	@echo
-
-	@echo "* Checking code with golint"
-	@golint src/$(PROJECT)/...
-	@echo
-
-	@echo "* Checking code with go vet"
-	@$(GO) vet $(PROJECT)/...
 
 clean:
 	rm -fr bin pkg vendor/pkg
