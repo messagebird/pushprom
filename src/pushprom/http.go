@@ -33,10 +33,10 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func listenHTTP() {
-	log.Printf("exposing metrics on http://0.0.0.0:" + *httpListenAddress + "/metrics\n")
+	log.Printf("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
 	http.Handle("/metrics", prometheus.Handler())
 
-	log.Println("listening for stats on http://0.0.0.0" + *httpListenAddress)
+	log.Println("listening for stats on http://" + *httpListenAddress)
 	http.HandleFunc("/", httpHandler)
 	log.Fatal(http.ListenAndServe(*httpListenAddress, nil))
 }
