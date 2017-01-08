@@ -24,7 +24,7 @@ func listenUDP() {
 	for {
 		n, _, err := serverConn.ReadFromUDP(buf)
 		if err != nil {
-			log.Println("Error: ", err)
+			log.Println("Error reading from UDP: ", err)
 			continue
 		}
 		udpPacketCount.Inc()
@@ -33,13 +33,13 @@ func listenUDP() {
 		}
 		delta, err := NewDelta(bytes.NewBuffer(buf[0:n]))
 		if err != nil {
-			log.Println("Error: ", err)
+			log.Println("Error creating delta: ", err)
 			continue
 		}
 
 		err = delta.Apply()
 		if err != nil {
-			log.Println("Error: ", err)
+			log.Println("Error applying delta: ", err)
 		}
 	}
 }

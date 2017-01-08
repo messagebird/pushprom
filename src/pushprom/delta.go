@@ -59,31 +59,29 @@ func (delta Delta) applyOnCounter() error {
 	}
 	if len(delta.Labels) > 0 {
 		vec := prometheus.NewCounterVec(opts, delta.LabelNames())
-
-		registered, err := prometheus.RegisterOrGet(vec)
+		err := prometheus.Register(vec)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			vec = registered.(*prometheus.CounterVec)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				vec = are.ExistingCollector.(*prometheus.CounterVec)
+			} else {
+				return err
+			}
 		}
 
 		metric = vec.With(delta.Labels)
 	} else {
 		metric = prometheus.NewCounter(opts)
-
-		registered, err := prometheus.RegisterOrGet(metric)
+		err := prometheus.Register(metric)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			metric = registered.(prometheus.Counter)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				metric = are.ExistingCollector.(prometheus.Counter)
+			} else {
+				return err
+			}
 		}
 	}
 
 	switch delta.Method {
-	case "set":
-		metric.Set(delta.Value)
 	case "inc":
 		metric.Inc()
 	case "add":
@@ -103,25 +101,25 @@ func (delta Delta) applyOnGauge() error {
 	}
 	if len(delta.Labels) > 0 {
 		vec := prometheus.NewGaugeVec(opts, delta.LabelNames())
-
-		registered, err := prometheus.RegisterOrGet(vec)
+		err := prometheus.Register(vec)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			vec = registered.(*prometheus.GaugeVec)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				vec = are.ExistingCollector.(*prometheus.GaugeVec)
+			} else {
+				return err
+			}
 		}
 
 		metric = vec.With(delta.Labels)
 	} else {
 		metric = prometheus.NewGauge(opts)
-
-		registered, err := prometheus.RegisterOrGet(metric)
+		err := prometheus.Register(metric)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			metric = registered.(prometheus.Gauge)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				metric = are.ExistingCollector.(prometheus.Gauge)
+			} else {
+				return err
+			}
 		}
 	}
 
@@ -151,25 +149,25 @@ func (delta Delta) applyOnHistogram() error {
 	}
 	if len(delta.Labels) > 0 {
 		vec := prometheus.NewHistogramVec(opts, delta.LabelNames())
-
-		registered, err := prometheus.RegisterOrGet(vec)
+		err := prometheus.Register(vec)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			vec = registered.(*prometheus.HistogramVec)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				vec = are.ExistingCollector.(*prometheus.HistogramVec)
+			} else {
+				return err
+			}
 		}
 
 		metric = vec.With(delta.Labels)
 	} else {
 		metric = prometheus.NewHistogram(opts)
-
-		registered, err := prometheus.RegisterOrGet(metric)
+		err := prometheus.Register(metric)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			metric = registered.(prometheus.Histogram)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				metric = are.ExistingCollector.(prometheus.Histogram)
+			} else {
+				return err
+			}
 		}
 	}
 
@@ -190,25 +188,25 @@ func (delta Delta) applyOnSummary() error {
 	}
 	if len(delta.Labels) > 0 {
 		vec := prometheus.NewSummaryVec(opts, delta.LabelNames())
-
-		registered, err := prometheus.RegisterOrGet(vec)
+		err := prometheus.Register(vec)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			vec = registered.(*prometheus.SummaryVec)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				vec = are.ExistingCollector.(*prometheus.SummaryVec)
+			} else {
+				return err
+			}
 		}
 
 		metric = vec.With(delta.Labels)
 	} else {
 		metric = prometheus.NewSummary(opts)
-
-		registered, err := prometheus.RegisterOrGet(metric)
+		err := prometheus.Register(metric)
 		if err != nil {
-			return err
-		}
-		if registered != nil {
-			metric = registered.(prometheus.Summary)
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				metric = are.ExistingCollector.(prometheus.Summary)
+			} else {
+				return err
+			}
 		}
 	}
 
