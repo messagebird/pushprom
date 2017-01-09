@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: <NAMESPACE>
+  name: pushprom
+  labels:
+    app: pushprom
+spec:
+  type: NodePort
+  ports:
+  - port: 9090
+    protocol: UDP
+    name: pushprom-udp-9090
+  - port: 9091
+    protocol: TCP
+    name: pushprom-tcp-9091
+  selector:
+    app: pushprom
