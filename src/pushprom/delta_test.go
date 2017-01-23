@@ -179,16 +179,6 @@ func TestMulti(t *testing.T) {
 		f          func(a, b float64) float64
 		firstValue float64
 	}{
-		/*{
-			Delta{
-				Type:   COUNTER,
-				Method: "set",
-			},
-			func(before, value float64) float64 {
-				return value
-			},
-			0,
-		},*/
 		{
 			Delta{
 				Type:   COUNTER,
