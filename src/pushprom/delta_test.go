@@ -98,11 +98,8 @@ func TestApplyVector(t *testing.T) {
 		Help: delta.Help,
 	}, delta.LabelNames())
 
-	metric, err := prometheus.RegisterOrGet(gaugeVec)
+	err := prometheus.Register(gaugeVec)
 	assert.Nil(t, err)
-	if metric != nil {
-		gaugeVec = metric.(*prometheus.GaugeVec)
-	}
 
 	gauge := gaugeVec.With(delta.Labels)
 	gauge.Set(initialValue)
@@ -133,11 +130,8 @@ func TestApplyOne(t *testing.T) {
 		Name: delta.Name,
 		Help: delta.Help,
 	})
-	metric, err := prometheus.RegisterOrGet(gauge)
+	err := prometheus.Register(gauge)
 	assert.Nil(t, err)
-	if metric != nil {
-		gauge = metric.(prometheus.Gauge)
-	}
 
 	gauge.Set(initialValue)
 
@@ -185,16 +179,6 @@ func TestMulti(t *testing.T) {
 		f          func(a, b float64) float64
 		firstValue float64
 	}{
-		{
-			Delta{
-				Type:   COUNTER,
-				Method: "set",
-			},
-			func(before, value float64) float64 {
-				return value
-			},
-			0,
-		},
 		{
 			Delta{
 				Type:   COUNTER,
