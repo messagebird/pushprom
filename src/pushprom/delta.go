@@ -158,7 +158,7 @@ func (delta Delta) applyOnHistogram() error {
 			}
 		}
 
-		metric = vec.With(delta.Labels)
+		metric = vec.With(delta.Labels).(prometheus.Histogram)
 	} else {
 		metric = prometheus.NewHistogram(opts)
 		err := prometheus.Register(metric)
@@ -197,7 +197,7 @@ func (delta Delta) applyOnSummary() error {
 			}
 		}
 
-		metric = vec.With(delta.Labels)
+		metric = vec.With(delta.Labels).(prometheus.Summary)
 	} else {
 		metric = prometheus.NewSummary(opts)
 		err := prometheus.Register(metric)
