@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 
 func listenHTTP() {
 	log.Printf("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
-	http.Handle("/metrics", prometheus.Handler())
+	http.Handle("/metrics", promhttp.Handler())
 
 	log.Println("listening for stats on http://" + *httpListenAddress)
 	http.HandleFunc("/", httpHandler)
