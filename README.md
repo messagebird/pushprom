@@ -12,7 +12,7 @@ Prometheus doesn't offer a PHP client and PHP clients are hard to implement beca
 Execute the following command:
 
 ```bash
-make release
+go get -u github.com/messagebird/pushprom
 ```
 
 Or, alternatively, to build a Docker container:
@@ -20,6 +20,7 @@ Or, alternatively, to build a Docker container:
 ```bash
 make container
 ```
+
 
 ## Usage
 
