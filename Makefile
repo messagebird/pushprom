@@ -12,11 +12,9 @@ all:
 	@echo "make test          # Run the test suite"
 
 
-release_linux: export GOOS=linux
-release_linux: export GOARCH=amd64
 release_linux: 
 	dep ensure
-	go build -ldflags "-s -w" -o "bin/pushprom-$(VERSION).linux-amd64/pushprom" github.com/messagebird/pushprom	
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o "bin/pushprom-$(VERSION).linux-amd64/pushprom" github.com/messagebird/pushprom
 	mv bin/pushprom-$(VERSION).linux-amd64/pushprom bin/
 
 container: release_linux
