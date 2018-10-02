@@ -1,5 +1,5 @@
 FROM alpine:latest
-MAINTAINER MessageBird <support@messagebird.com>
+LABEL maintainer="support@messagebird.com"
 
 # Copy over the binary in the container.
 ADD bin/pushprom /usr/bin/
