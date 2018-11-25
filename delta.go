@@ -24,12 +24,13 @@ const (
 
 // Delta defines the pushprom message format. It represent a change on a Prometheus metric. It implements a simplistic rpc.
 type Delta struct {
-	Type   MetricType        `json:"type"`
-	Name   string            `json:"name"`
-	Help   string            `json:"help"`
-	Method string            `json:"method"`
-	Value  float64           `json:"value"`
-	Labels prometheus.Labels `json:"labels"`
+	Type    MetricType        `json:"type"`
+	Name    string            `json:"name"`
+	Help    string            `json:"help"`
+	Method  string            `json:"method"`
+	Value   float64           `json:"value"`
+	Labels  prometheus.Labels `json:"labels"`
+	Buckets *[]float64        `json:"buckets"`
 }
 
 // NewDelta creates a new Delta from the json contents of the io.Reader
@@ -147,6 +148,11 @@ func (delta Delta) applyOnHistogram() error {
 		Name: delta.Name,
 		Help: delta.Help,
 	}
+
+	if delta.Buckets != nil {
+		opts.Buckets = *delta.Buckets
+	}
+
 	if len(delta.Labels) > 0 {
 		vec := prometheus.NewHistogramVec(opts, delta.LabelNames())
 		err := prometheus.Register(vec)
