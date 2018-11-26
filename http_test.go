@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/prometheus/common/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +26,9 @@ func TestHTTP(t *testing.T) {
 	out, _ := json.Marshal(delta)
 	buf := bytes.NewBuffer(out)
 
-	ts := httptest.NewServer(http.HandlerFunc(httpHandler))
+	ts := httptest.NewServer(http.Handler(httpHandler{
+		log: log.NewLogger(os.Stdout),
+	}))
 	defer ts.Close()
 
 	res, err := http.Post(ts.URL, "application/json", buf)

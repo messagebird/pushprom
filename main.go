@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net"
+	"os"
+
+	"github.com/prometheus/common/log"
 )
 
 var (
@@ -16,8 +18,7 @@ var (
 func main() {
 	flag.Parse()
 
-	// Print more info on the log, like line number.
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	logger := log.NewLogger(os.Stdout)
 
 	var err error
 
@@ -31,8 +32,8 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	go listenUDP()
-	listenHTTP()
+	go listenUDP(logger)
+	listenHTTP(logger)
 }
 
 // ListenAddress Format a correct listen address

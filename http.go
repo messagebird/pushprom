@@ -2,13 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	plog "github.com/prometheus/common/log"
 )
 
-func httpHandler(w http.ResponseWriter, r *http.Request) {
+type httpHandler struct {
+	log plog.Logger
+}
+
+func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		defer r.Body.Close()
 		httpRequestCount.Inc()
@@ -32,11 +37,21 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listenHTTP() {
-	log.Printf("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
+func listenHTTP(log plog.Logger) {
+	log.Warnf("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
 	http.Handle("/metrics", promhttp.Handler())
 
-	log.Println("listening for stats on http://" + *httpListenAddress)
-	http.HandleFunc("/", httpHandler)
+	log.Warn("listening for stats on http://" + *httpListenAddress)
+
+	// Instrument the handlers with all the metrics, injecting the "handler"
+	// label by currying.
+	postHandler := promhttp.InstrumentHandlerDuration(httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": "post"}),
+		promhttp.InstrumentHandlerCounter(httpRequestsTotal, httpHandler{
+			log: log,
+		}),
+	)
+
+	http.HandleFunc("/", postHandler)
+
 	log.Fatal(http.ListenAndServe(*httpListenAddress, nil))
 }

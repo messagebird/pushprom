@@ -16,9 +16,27 @@ var (
 			Help: "The number of http requests received.",
 		},
 	)
+
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "requests_total",
+			Help: "A counter for requests to the wrapped handler.",
+		},
+		[]string{"code", "method"},
+	)
+
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "request_duration_seconds",
+			Help: "A histogram of latencies for requests.",
+		},
+		[]string{"handler", "method"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(udpPacketCount)
 	prometheus.MustRegister(httpRequestCount)
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(httpRequestDuration)
 }
