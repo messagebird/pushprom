@@ -11,25 +11,25 @@ REPO=pushprom
 
 rm -rf "bin/$REPO-$VERSION.linux-amd64"
 mkdir -p "bin/$REPO-$VERSION.linux-amd64"
-env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o "bin/sachet-$VERSION.linux-amd64/$REPO" github.com/$USER/$REPO
+env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o "bin/$REPO-$VERSION.linux-amd64/$REPO" github.com/$USER/$REPO
 cd bin
 tar -zcvf "$REPO-$VERSION.linux-amd64.tar.gz" "$REPO-$VERSION.linux-amd64"
 
 # go get -u github.com/aktau/github-release
 # dont forget to set your token like
 # export GITHUB_TOKEN=blabla
-git tag -a $VERSION -m "version $VERSION"
+# git tag -a $VERSION -m "version $VERSION"
 
-github-release release \
-    --user $USER \
-    --repo $REPO \
-    --tag $VERSION \
-    --name $VERSION \
-    --description "version $VERSION!" 
+#github-release release \
+#    --user $USER \
+#    --repo $REPO \
+#    --tag $VERSION \
+#    --name $VERSION \
+#    --description "version $VERSION!" 
 
-github-release upload \
-    --user $USER \
-    --repo $REPO \
-    --tag $VERSION \
-    --name "$REPO-$VERSION.linux-amd64.tar.gz" \
-    --file "$REPO-$VERSION.linux-amd64.tar.gz"
+#github-release upload \
+#    --user $USER \
+#    --repo $REPO \
+#    --tag $VERSION \
+#    --name "$REPO-$VERSION.linux-amd64.tar.gz" \
+#    --file "$REPO-$VERSION.linux-amd64.tar.gz"
