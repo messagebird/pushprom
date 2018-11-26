@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"net"
 
-	"github.com/prometheus/common/log"
+	plog "github.com/prometheus/common/log"
 )
 
-func listenUDP() {
+func listenUDP(log plog.Logger) {
 	log.Info("listening for stats UDP on port " + *udpListenAddress)
 	serverAddr, err := net.ResolveUDPAddr("udp", *udpListenAddress)
 	if err != nil {

@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/prometheus/common/log"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +17,9 @@ var conn *net.UDPConn
 func TestMain(m *testing.M) {
 	*udpListenAddress = ":3007"
 
-	go listenUDP()
+	logger := log.NewNopLogger()
+
+	go listenUDP(logger)
 
 	// wait for it to "boot"
 	time.Sleep(time.Millisecond * 1000)
