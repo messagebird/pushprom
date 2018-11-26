@@ -18,18 +18,18 @@ tar -zcvf "$REPO-$VERSION.linux-amd64.tar.gz" "$REPO-$VERSION.linux-amd64"
 # go get -u github.com/aktau/github-release
 # dont forget to set your token like
 # export GITHUB_TOKEN=blabla
-# git tag -a $VERSION -m "version $VERSION"
+git tag -a $VERSION -m "version $VERSION"
 
-#github-release release \
-#    --user $USER \
-#    --repo $REPO \
-#    --tag $VERSION \
-#    --name $VERSION \
-#    --description "version $VERSION!" 
+github-release release \
+    --user $USER \
+    --repo $REPO \
+    --tag $VERSION \
+    --name $VERSION \
+    --description "version $VERSION!" 
 
-#github-release upload \
-#    --user $USER \
-#    --repo $REPO \
-#    --tag $VERSION \
-#    --name "$REPO-$VERSION.linux-amd64.tar.gz" \
-#    --file "$REPO-$VERSION.linux-amd64.tar.gz"
+github-release upload \
+    --user $USER \
+    --repo $REPO \
+    --tag $VERSION \
+    --name "$REPO-$VERSION.linux-amd64.tar.gz" \
+    --file "$REPO-$VERSION.linux-amd64.tar.gz"
