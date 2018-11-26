@@ -38,10 +38,10 @@ func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func listenHTTP(log plog.Logger) {
-	log.Warnf("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
+	log.Infof("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
 	http.Handle("/metrics", promhttp.Handler())
 
-	log.Warn("listening for stats on http://" + *httpListenAddress)
+	log.Info("listening for stats on http://" + *httpListenAddress)
 
 	// Instrument the handlers with all the metrics, injecting the "handler"
 	// label by currying.

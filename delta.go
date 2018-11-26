@@ -30,7 +30,7 @@ type Delta struct {
 	Method  string            `json:"method"`
 	Value   float64           `json:"value"`
 	Labels  prometheus.Labels `json:"labels"`
-	Buckets *[]float64        `json:"buckets"`
+	Buckets []float64         `json:"buckets"`
 }
 
 // NewDelta creates a new Delta from the json contents of the io.Reader
@@ -145,12 +145,9 @@ func (delta Delta) applyOnGauge() error {
 func (delta Delta) applyOnHistogram() error {
 	var metric prometheus.Histogram
 	opts := prometheus.HistogramOpts{
-		Name: delta.Name,
-		Help: delta.Help,
-	}
-
-	if delta.Buckets != nil {
-		opts.Buckets = *delta.Buckets
+		Name:    delta.Name,
+		Help:    delta.Help,
+		Buckets: delta.Buckets,
 	}
 
 	if len(delta.Labels) > 0 {
