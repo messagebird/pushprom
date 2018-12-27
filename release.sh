@@ -1,23 +1,35 @@
 #!/usr/bin/env bash
 # a hack to generate releases like other prometheus projects
-# use like this: 
+# use like this:
 #       VERSION=1.0.1 ./release.sh
-
-set -e 
+set -e
 
 # github user and repo
 USER=messagebird
 REPO=pushprom
+BIN_PACKAGE=github.com/${USER}/${REPO}
+BIN_DIR=bin
 
-rm -rf "bin/$REPO-$VERSION.linux-amd64"
-mkdir -p "bin/$REPO-$VERSION.linux-amd64"
-env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o "bin/$REPO-$VERSION.linux-amd64/$REPO" github.com/$USER/$REPO
-cd bin
-tar -zcvf "$REPO-$VERSION.linux-amd64.tar.gz" "$REPO-$VERSION.linux-amd64"
+if [ -z "$VERSION" ]; then
+    >&2 echo "missing VERSION=X.X.X"
+    exit 1
+fi
 
-# go get -u github.com/aktau/github-release
-# dont forget to set your token like
-# export GITHUB_TOKEN=blabla
+function build_for {
+    BIN_NAME="bin/${REPO}-${VERSION}.$1-$2"
+    GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "-s -w" -o ${BIN_NAME} ${BIN_PACKAGE}
+    shasum -a 256 ${BIN_NAME} > ${BIN_NAME}.sha256
+}
+
+rm -rf ${BIN_DIR}
+mkdir -p ${BIN_DIR}
+
+build_for linux amd64
+build_for darwin amd64
+
+docker build -t ${USER}/${REPO}:${VERSION} .
+
+
 git tag -a $VERSION -m "version $VERSION"
 
 github-release release \
@@ -25,11 +37,17 @@ github-release release \
     --repo $REPO \
     --tag $VERSION \
     --name $VERSION \
-    --description "version $VERSION!" 
+    --description "version $VERSION"
 
-github-release upload \
-    --user $USER \
-    --repo $REPO \
-    --tag $VERSION \
-    --name "$REPO-$VERSION.linux-amd64.tar.gz" \
-    --file "$REPO-$VERSION.linux-amd64.tar.gz"
+for release_file in $(ls ${BIN_DIR}); do
+    github-release upload \
+        --user $USER \
+        --repo $REPO \
+        --tag $VERSION \
+        --name "${release_file}" \
+        --file "${BIN_DIR}/${release_file}"
+done
+
+docker push ${USER}/${REPO}:${VERSION}
+docker tag ${USER}/${REPO}:${VERSION} ${USER}/${REPO}:latest
+docker push ${USER}/${REPO}:latest
