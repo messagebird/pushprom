@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"net"
 
 	plog "github.com/prometheus/common/log"
 )
 
-func listenUDP(log plog.Logger) {
+func listenUDP(ctx context.Context, log plog.Logger) {
 	log.Info("listening for stats UDP on port " + *udpListenAddress)
 	serverAddr, err := net.ResolveUDPAddr("udp", *udpListenAddress)
 	if err != nil {
@@ -23,6 +24,13 @@ func listenUDP(log plog.Logger) {
 	buf := make([]byte, 8192)
 
 	for {
+		// handle cancelled context.
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		n, _, err := serverConn.ReadFromUDP(buf)
 		if err != nil {
 			log.Error("Error reading from UDP: ", err)

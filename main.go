@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/prometheus/common/log"
 )
@@ -17,6 +20,7 @@ var (
 
 func main() {
 	flag.Parse()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	logger := log.NewLogger(os.Stdout)
 
@@ -32,8 +36,17 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	go listenUDP(logger)
-	listenHTTP(logger)
+	go listenUDP(ctx, logger)
+	go listenHTTP(ctx, logger)
+
+	handleSIGTERM(cancel)
+}
+
+func handleSIGTERM(cancel func()) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGTERM)
+	<-sigc
+	cancel()
 }
 
 // ListenAddress Format a correct listen address
