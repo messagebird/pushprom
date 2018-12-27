@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -37,9 +39,11 @@ func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listenHTTP(log plog.Logger) {
+func listenHTTP(ctx context.Context, log plog.Logger) {
 	log.Infof("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
-	http.Handle("/metrics", promhttp.Handler())
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
 
 	log.Info("listening for stats on http://" + *httpListenAddress)
 
@@ -51,7 +55,17 @@ func listenHTTP(log plog.Logger) {
 		}),
 	)
 
-	http.HandleFunc("/", postHandler)
+	mux.HandleFunc("/", postHandler)
 
-	log.Fatal(http.ListenAndServe(*httpListenAddress, nil))
+	server := http.Server{Addr: *httpListenAddress, Handler: mux}
+
+	go func() {
+		<-ctx.Done()
+
+		servCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		server.Shutdown(servCtx)
+		cancel()
+	}()
+
+	log.Fatal(server.ListenAndServe())
 }

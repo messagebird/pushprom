@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"os"
@@ -19,7 +20,7 @@ func TestMain(m *testing.M) {
 
 	logger := log.NewNopLogger()
 
-	go listenUDP(logger)
+	go listenUDP(context.Background(), logger)
 
 	// wait for it to "boot"
 	time.Sleep(time.Millisecond * 1000)
