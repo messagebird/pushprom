@@ -1,12 +1,21 @@
-FROM alpine:latest
-MAINTAINER MessageBird <support@messagebird.com>
+FROM golang:1.11.1-alpine3.8 as build-env
+# All these steps will be cached
 
-# Copy over the binary in the container.
-COPY bin/pushprom-*.linux-amd64 /usr/bin/pushprom
+RUN apk add git
+RUN mkdir /pushprom
+WORKDIR /pushprom
+COPY go.mod . 
+COPY go.sum .
 
-EXPOSE 9090 9091
+# Get dependancies - will also be cached if we won't change mod/sum
+RUN go mod download
+# COPY the source code as the last step
+COPY . .
 
-# Run
-CMD ["/usr/bin/pushprom"]
+# Build the binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags "-s -w" -installsuffix cgo -o /go/bin/pushprom .
 
-
+# <- Second step to build minimal image
+FROM scratch 
+COPY --from=build-env /go/bin/pushprom /go/bin/pushprom
+ENTRYPOINT ["/go/bin/pushprom"]
