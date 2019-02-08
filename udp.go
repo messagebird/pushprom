@@ -37,9 +37,9 @@ func listenUDP(ctx context.Context, log plog.Logger) {
 			continue
 		}
 		udpPacketCount.Inc()
-		if *debug {
-			log.Debugf("new udp package: %s", string(buf[0:n]))
-		}
+
+		log.Debugf("new udp package: %s", string(buf[0:n]))
+
 		delta, err := NewDelta(bytes.NewBuffer(buf[0:n]))
 		if err != nil {
 			log.Error("Error creating delta: ", err)
