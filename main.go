@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	debug             = flag.Bool("debug", false, "Log debugging messages.")
+	logLevel          = flag.String("log-level", "info", "Log level: debug, info (default), warn, error, fatal.")
 	udpListenAddress  = flag.String("udp-listen-address", "0.0.0.0:9090", "The address to listen on for udp stats requests.")
 	httpListenAddress = flag.String("http-listen-address", "0.0.0.0:9091", "The address to listen on for http stat and telemetry requests.")
 )
@@ -25,6 +25,10 @@ func main() {
 	logger := log.NewLogger(os.Stdout)
 
 	var err error
+
+	if err = logger.SetLevel(*logLevel); err != nil {
+		log.Fatalf(err.Error())
+	}
 
 	*udpListenAddress, err = ListenAddress(*udpListenAddress)
 	if err != nil {

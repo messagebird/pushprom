@@ -38,10 +38,10 @@ Use the `-h` flag to get help information.
 ```
 $ pushprom -h
 Usage of bin/pushprom:
-  -debug
-        Log debugging messages.
   -http-listen-address string
         The address to listen on for http stat and telemetry requests. (default ":9091")
+  -log-level string
+        Log level: debug, info (default), warn, error, fatal. (default "info")
   -udp-listen-address string
         The address to listen on for udp stats requests. (default ":9090")
 ```
