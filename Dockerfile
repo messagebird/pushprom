@@ -1,4 +1,4 @@
-FROM golang:1.11.1-alpine3.8 as build-env
+FROM golang:alpine as build-env
 # All these steps will be cached
 
 RUN apk add git
