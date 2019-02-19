@@ -13,11 +13,11 @@ all:
 
 
 release_linux: 
-	dep ensure
+    go mod download
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o "bin/pushprom-$(VERSION).linux-amd64/pushprom" github.com/messagebird/pushprom
 	mv bin/pushprom-$(VERSION).linux-amd64/pushprom bin/
 
-container: release_linux
+container: 
 	@echo "* Creating $(PROJECT) Docker container"
 	@docker build -t $(PROJECT):$(VERSION) .
 	@docker tag $(PROJECT):$(VERSION) $(PROJECT):latest
