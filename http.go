@@ -45,7 +45,9 @@ func listenHTTP(ctx context.Context, log plog.Logger) {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
-	log.Info("listening for stats on http://" + *httpListenAddress)
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "ok")
+	})
 
 	// Instrument the handlers with all the metrics, injecting the "handler"
 	// label by currying.
@@ -67,5 +69,6 @@ func listenHTTP(ctx context.Context, log plog.Logger) {
 		cancel()
 	}()
 
+	log.Info("listening for stats on http://" + *httpListenAddress)
 	log.Fatal(server.ListenAndServe())
 }
