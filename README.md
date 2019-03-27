@@ -107,7 +107,7 @@ We currently offer two flavors of PHP clients for Pushprom:
 # Tests
 
 ```bash
-make test
+go test ./...
 ```
 
 ## License
