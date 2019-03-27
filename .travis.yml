@@ -2,6 +2,7 @@ language: go
 
 go:
   - "1.11"
+  - "1.12"
 
 before_install:
   - GO111MODULE=on go mod vendor
