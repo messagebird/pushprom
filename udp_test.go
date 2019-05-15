@@ -63,7 +63,9 @@ func TestUDP(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 500)
 
-	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
+	result, err := metrics.Read(ms, delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, delta.Value, result)
 	}
@@ -83,7 +85,8 @@ func TestIncorrectJson(t *testing.T) {
 	_, err := conn.Write(buf)
 	assert.Nil(t, err)
 
-	oldMetrics := metrics.Fetch(t)
+	oldMetrics, err := metrics.Fetch()
+	assert.Nil(t, err)
 	oldResult, err := metrics.Read(oldMetrics, oldDelta.Name, oldDelta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, oldDelta.Value, oldResult)
@@ -108,7 +111,8 @@ func TestIncorrectJson(t *testing.T) {
 	_, err = conn.Write(buf)
 	assert.Nil(t, err)
 
-	newMetrics := metrics.Fetch(t)
+	newMetrics, err := metrics.Fetch()
+	assert.Nil(t, err)
 	newResult, err := metrics.Read(newMetrics, newDelta.Name, newDelta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, newDelta.Value, newResult)

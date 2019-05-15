@@ -3,23 +3,23 @@ package metrics
 
 import (
 	"bufio"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
-	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func Fetch(t *testing.T) map[string]string {
+func Fetch() (map[string]string, error) {
 	result := make(map[string]string)
 	ts := httptest.NewServer(prometheus.Handler())
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)
 	if err != nil {
-		t.Fatal(err)
+		return result, err
 	}
 	reader := bufio.NewReader(res.Body)
 	err = nil
@@ -32,7 +32,10 @@ func Fetch(t *testing.T) map[string]string {
 			result[parts[0]] = parts[1]
 		}
 	}
-	return result
+	if err == io.EOF {
+		err = nil
+	}
+	return result, err
 }
 
 func Read(metrics map[string]string, name string, labels prometheus.Labels) (float64, error) {

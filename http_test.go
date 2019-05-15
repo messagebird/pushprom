@@ -41,7 +41,9 @@ func TestHTTP(t *testing.T) {
 	res.Body.Close()
 	assert.Nil(t, err)
 
-	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
+	result, err := metrics.Read(ms, delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, delta.Value, result)
 	}

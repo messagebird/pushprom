@@ -65,7 +65,9 @@ func TestApplyVector(t *testing.T) {
 	err = delta.Apply()
 	assert.Nil(t, err)
 
-	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
+	result, err := metrics.Read(ms, delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		// check if the delta value was added to the metric
 		expected := initialValue + delta.Value
@@ -96,7 +98,9 @@ func TestApplyOne(t *testing.T) {
 	err = delta.Apply()
 	assert.Nil(t, err)
 
-	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
+	result, err := metrics.Read(ms, delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		// check if the delta value was added to the metric
 		expected := initialValue + delta.Value
@@ -252,7 +256,8 @@ func TestMulti(t *testing.T) {
 
 	initialValue := 0.0 // all metrics start with value zero
 	// get metrics and compare results
-	ms := metrics.Fetch(t)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
 
 	for i := 0; i < len(tests); i++ {
 		test := &tests[i]
@@ -278,7 +283,8 @@ func TestMulti(t *testing.T) {
 	}
 
 	// get metrics and compare results
-	ms = metrics.Fetch(t)
+	ms, err = metrics.Fetch()
+	assert.Nil(t, err)
 	for i := 0; i < len(tests); i++ {
 		test := &tests[i]
 		// read result and compare
