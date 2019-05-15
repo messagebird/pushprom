@@ -1,16 +1,12 @@
-package main
+package delta
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
-	"strings"
 	"testing"
 
+	"github.com/messagebird/pushprom/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,45 +33,6 @@ func TestNewDelta(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, expected, result)
-}
-
-func fetchMetrics(t *testing.T) map[string]string {
-	result := make(map[string]string)
-	ts := httptest.NewServer(prometheus.Handler())
-	defer ts.Close()
-
-	res, err := http.Get(ts.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
-	reader := bufio.NewReader(res.Body)
-	err = nil
-	for err == nil {
-		var line string
-		line, err = reader.ReadString('\n')
-		line = strings.Trim(line, "\n")
-		parts := strings.Split(line, " ")
-		if (parts[0] != "#") && (len(parts) > 1) {
-			result[parts[0]] = parts[1]
-		}
-	}
-	return result
-}
-
-func readMetric(metrics map[string]string, name string, labels prometheus.Labels) (float64, error) {
-	// http_request_duration_microseconds{handler="alerts",quantile="0.5"}
-	fullName := name
-	if len(labels) > 0 {
-		pairs := []string{}
-		// TODO SORT GOOD
-		for k, v := range labels {
-			pairs = append(pairs, k+"=\""+v+"\"")
-		}
-		fullName += "{" + strings.Join(pairs, ",") + "}"
-	}
-
-	stringValue := metrics[fullName]
-	return strconv.ParseFloat(stringValue, 64)
 }
 
 func TestApplyVector(t *testing.T) {
@@ -108,7 +65,7 @@ func TestApplyVector(t *testing.T) {
 	err = delta.Apply()
 	assert.Nil(t, err)
 
-	result, err := readMetric(fetchMetrics(t), delta.Name, delta.Labels)
+	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		// check if the delta value was added to the metric
 		expected := initialValue + delta.Value
@@ -139,7 +96,7 @@ func TestApplyOne(t *testing.T) {
 	err = delta.Apply()
 	assert.Nil(t, err)
 
-	result, err := readMetric(fetchMetrics(t), delta.Name, delta.Labels)
+	result, err := metrics.Read(metrics.Fetch(t), delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		// check if the delta value was added to the metric
 		expected := initialValue + delta.Value
@@ -295,7 +252,7 @@ func TestMulti(t *testing.T) {
 
 	initialValue := 0.0 // all metrics start with value zero
 	// get metrics and compare results
-	metrics := fetchMetrics(t)
+	ms := metrics.Fetch(t)
 
 	for i := 0; i < len(tests); i++ {
 		test := &tests[i]
@@ -304,7 +261,7 @@ func TestMulti(t *testing.T) {
 		if test.delta.Type == HISTOGRAM || test.delta.Type == SUMMARY {
 			metricName += "_sum"
 		}
-		result, err := readMetric(metrics, metricName, test.delta.Labels)
+		result, err := metrics.Read(ms, metricName, test.delta.Labels)
 		if assert.Nil(t, err) {
 			test.firstValue = result
 			// check if the delta value was added to the metric
@@ -321,7 +278,7 @@ func TestMulti(t *testing.T) {
 	}
 
 	// get metrics and compare results
-	metrics = fetchMetrics(t)
+	ms = metrics.Fetch(t)
 	for i := 0; i < len(tests); i++ {
 		test := &tests[i]
 		// read result and compare
@@ -329,7 +286,7 @@ func TestMulti(t *testing.T) {
 		if test.delta.Type == HISTOGRAM || test.delta.Type == SUMMARY {
 			metricName += "_sum"
 		}
-		result, err := readMetric(metrics, metricName, test.delta.Labels)
+		result, err := metrics.Read(ms, metricName, test.delta.Labels)
 		if assert.Nil(t, err) {
 			// check if the delta value was added to the metric
 			expected := test.f(test.firstValue, test.delta.Value)

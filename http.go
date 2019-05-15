@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/messagebird/pushprom/delta"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	plog "github.com/prometheus/common/log"
@@ -20,7 +22,7 @@ func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		httpRequestCount.Inc()
 
-		delta, err := NewDelta(r.Body)
+		delta, err := delta.NewDelta(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, err)
