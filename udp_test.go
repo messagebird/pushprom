@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/messagebird/pushprom/delta"
+	"github.com/messagebird/pushprom/metrics"
 	"github.com/prometheus/common/log"
 
 	"github.com/stretchr/testify/assert"
@@ -46,8 +48,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestUDP(t *testing.T) {
-	delta := &Delta{
-		Type:   GAUGE,
+	delta := &delta.Delta{
+		Type:   delta.GAUGE,
 		Method: "set",
 		Name:   "tree_width",
 		Help:   "the width in meters of the tree",
@@ -61,8 +63,9 @@ func TestUDP(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 500)
 
-	metrics := fetchMetrics(t)
-	result, err := readMetric(metrics, delta.Name, delta.Labels)
+	ms, err := metrics.Fetch()
+	assert.Nil(t, err)
+	result, err := metrics.Read(ms, delta.Name, delta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, delta.Value, result)
 	}
@@ -70,8 +73,8 @@ func TestUDP(t *testing.T) {
 
 func TestIncorrectJson(t *testing.T) {
 	// First, let's write the correct value
-	oldDelta := &Delta{
-		Type:   GAUGE,
+	oldDelta := &delta.Delta{
+		Type:   delta.GAUGE,
 		Method: "set",
 		Name:   "tree_width",
 		Help:   "the width in meters of the tree",
@@ -82,8 +85,9 @@ func TestIncorrectJson(t *testing.T) {
 	_, err := conn.Write(buf)
 	assert.Nil(t, err)
 
-	oldMetrics := fetchMetrics(t)
-	oldResult, err := readMetric(oldMetrics, oldDelta.Name, oldDelta.Labels)
+	oldMetrics, err := metrics.Fetch()
+	assert.Nil(t, err)
+	oldResult, err := metrics.Read(oldMetrics, oldDelta.Name, oldDelta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, oldDelta.Value, oldResult)
 	}
@@ -95,8 +99,8 @@ func TestIncorrectJson(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Last, let's write a new value
-	newDelta := &Delta{
-		Type:   GAUGE,
+	newDelta := &delta.Delta{
+		Type:   delta.GAUGE,
 		Method: "set",
 		Name:   "tree_width",
 		Help:   "the width in meters of the tree",
@@ -107,8 +111,9 @@ func TestIncorrectJson(t *testing.T) {
 	_, err = conn.Write(buf)
 	assert.Nil(t, err)
 
-	newMetrics := fetchMetrics(t)
-	newResult, err := readMetric(newMetrics, newDelta.Name, newDelta.Labels)
+	newMetrics, err := metrics.Fetch()
+	assert.Nil(t, err)
+	newResult, err := metrics.Read(newMetrics, newDelta.Name, newDelta.Labels)
 	if assert.Nil(t, err) {
 		assert.Equal(t, newDelta.Value, newResult)
 	}

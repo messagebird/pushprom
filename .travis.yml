@@ -7,4 +7,4 @@ go:
 before_install:
   - GO111MODULE=on go mod vendor
 
-script: go test
+script: go test ./...

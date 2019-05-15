@@ -1,4 +1,4 @@
-package main
+package delta
 
 import (
 	"encoding/json"

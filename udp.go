@@ -5,6 +5,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/messagebird/pushprom/delta"
 	plog "github.com/prometheus/common/log"
 )
 
@@ -40,7 +41,7 @@ func listenUDP(ctx context.Context, log plog.Logger) {
 
 		log.Debugf("new udp package: %s", string(buf[0:n]))
 
-		delta, err := NewDelta(bytes.NewBuffer(buf[0:n]))
+		delta, err := delta.NewDelta(bytes.NewBuffer(buf[0:n]))
 		if err != nil {
 			log.Error("Error creating delta: ", err)
 			continue
