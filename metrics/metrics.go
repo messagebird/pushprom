@@ -3,6 +3,7 @@ package metrics
 
 import (
 	"bufio"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +15,7 @@ import (
 
 func Fetch() (map[string]string, error) {
 	result := make(map[string]string)
-	ts := httptest.NewServer()
+	ts := httptest.NewServer(promhttp.Handler())
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)
