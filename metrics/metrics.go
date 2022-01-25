@@ -14,7 +14,7 @@ import (
 
 func Fetch() (map[string]string, error) {
 	result := make(map[string]string)
-	ts := httptest.NewServer(prometheus.Handler())
+	ts := httptest.NewServer()
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)

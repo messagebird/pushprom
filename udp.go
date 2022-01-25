@@ -3,24 +3,32 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"log"
 	"net"
 
 	"github.com/messagebird/pushprom/delta"
-	plog "github.com/prometheus/common/log"
+
 )
 
-func listenUDP(ctx context.Context, log plog.Logger) {
-	log.Info("listening for stats UDP on port " + *udpListenAddress)
+func listenUDP(ctx context.Context) {
+	fmt.Println("listening for stats UDP on port " + *udpListenAddress)
 	serverAddr, err := net.ResolveUDPAddr("udp", *udpListenAddress)
 	if err != nil {
-		log.Error(err)
+		log.Print(err)
 	}
 
 	serverConn, err := net.ListenUDP("udp", serverAddr)
 	if err != nil {
-		log.Error(err)
+		log.Print(err)
 	}
-	defer serverConn.Close()
+
+	defer func(serverConn *net.UDPConn) {
+		err := serverConn.Close()
+		if err != nil {
+			log.Print(err)
+		}
+	}(serverConn)
 
 	buf := make([]byte, 8192)
 
@@ -34,22 +42,22 @@ func listenUDP(ctx context.Context, log plog.Logger) {
 
 		n, _, err := serverConn.ReadFromUDP(buf)
 		if err != nil {
-			log.Error("Error reading from UDP: ", err)
+			log.Print("Error reading from UDP: ", err)
 			continue
 		}
 		udpPacketCount.Inc()
 
-		log.Debugf("new udp package: %s", string(buf[0:n]))
+		fmt.Printf("new udp package: %s\n", string(buf[0:n]))
 
-		delta, err := delta.NewDelta(bytes.NewBuffer(buf[0:n]))
+		newDelta, err := delta.NewDelta(bytes.NewBuffer(buf[0:n]))
 		if err != nil {
-			log.Error("Error creating delta: ", err)
+			log.Print("Error creating delta: ", err)
 			continue
 		}
 
-		err = delta.Apply()
+		err = newDelta.Apply()
 		if err != nil {
-			log.Error("Error applying delta: ", err)
+			log.Print("Error applying delta: ", err)
 		}
 	}
 }
