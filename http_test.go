@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/messagebird/pushprom/delta"
 	"github.com/messagebird/pushprom/metrics"
-	"github.com/prometheus/common/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +28,7 @@ func TestHTTP(t *testing.T) {
 	buf := bytes.NewBuffer(out)
 
 	ts := httptest.NewServer(http.Handler(httpHandler{
-		log: log.NewLogger(os.Stdout),
+
 	}))
 	defer ts.Close()
 

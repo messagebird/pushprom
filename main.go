@@ -4,12 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/prometheus/common/log"
 )
 
 var (
@@ -22,13 +21,8 @@ func main() {
 	flag.Parse()
 	ctx, cancel := context.WithCancel(context.Background())
 
-	logger := log.NewLogger(os.Stdout)
 
 	var err error
-
-	if err = logger.SetLevel(*logLevel); err != nil {
-		log.Fatalf(err.Error())
-	}
 
 	*udpListenAddress, err = ListenAddress(*udpListenAddress)
 	if err != nil {
@@ -40,8 +34,8 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	go listenUDP(ctx, logger)
-	go listenHTTP(ctx, logger)
+	go listenUDP(ctx)
+	go listenHTTP(ctx)
 
 	handleSIGTERM(cancel)
 }

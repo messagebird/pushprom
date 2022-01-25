@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -10,26 +11,27 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	plog "github.com/prometheus/common/log"
 )
 
 type httpHandler struct {
-	log plog.Logger
 }
 
 func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
+	if r.Body != nil {
 		defer r.Body.Close()
+	}
+
+	if r.Method == "POST" {
 		httpRequestCount.Inc()
 
-		delta, err := delta.NewDelta(r.Body)
+		newDelta, err := delta.NewDelta(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, err)
 			return
 		}
 
-		if err = delta.Apply(); err != nil {
+		if err = newDelta.Apply(); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, err)
 		} else {
@@ -41,8 +43,8 @@ func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listenHTTP(ctx context.Context, log plog.Logger) {
-	log.Infof("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
+func listenHTTP(ctx context.Context) {
+	log.Println("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
@@ -54,9 +56,7 @@ func listenHTTP(ctx context.Context, log plog.Logger) {
 	// Instrument the handlers with all the metrics, injecting the "handler"
 	// label by currying.
 	postHandler := promhttp.InstrumentHandlerDuration(httpRequestDuration.MustCurryWith(prometheus.Labels{"handler": "post"}),
-		promhttp.InstrumentHandlerCounter(httpRequestsTotal, httpHandler{
-			log: log,
-		}),
+		promhttp.InstrumentHandlerCounter(httpRequestsTotal, httpHandler{}),
 	)
 
 	mux.HandleFunc("/", postHandler)
@@ -67,10 +67,13 @@ func listenHTTP(ctx context.Context, log plog.Logger) {
 		<-ctx.Done()
 
 		servCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		server.Shutdown(servCtx)
+		err := server.Shutdown(servCtx)
+		if err != nil {
+			log.Print(err)
+		}
 		cancel()
 	}()
 
-	log.Info("listening for stats on http://" + *httpListenAddress)
+	log.Println("listening for stats on http://" + *httpListenAddress)
 	log.Fatal(server.ListenAndServe())
 }

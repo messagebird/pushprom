@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"log"
 	"testing"
 	"time"
 
 	"github.com/messagebird/pushprom/delta"
 	"github.com/messagebird/pushprom/metrics"
-	"github.com/prometheus/common/log"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,9 +20,7 @@ var conn *net.UDPConn
 func TestMain(m *testing.M) {
 	*udpListenAddress = ":3007"
 
-	logger := log.NewNopLogger()
-
-	go listenUDP(context.Background(), logger)
+	go listenUDP(context.Background())
 
 	// wait for it to "boot"
 	time.Sleep(time.Millisecond * 1000)

@@ -13,7 +13,7 @@ all:
 
 
 release_linux: 
-    go mod download
+	go mod download
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o "bin/pushprom-$(VERSION).linux-amd64/pushprom" github.com/messagebird/pushprom
 	mv bin/pushprom-$(VERSION).linux-amd64/pushprom bin/
 
