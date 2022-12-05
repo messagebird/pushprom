@@ -83,6 +83,7 @@ func listenHTTP(wg *sync.WaitGroup, ctx context.Context, stderrLogger *log.Logge
 		}
 		cancel()
 		defer wg.Done()
+		stdoutLogger.Println("http listener is now offline")
 	}(wg)
 
 	stdoutLogger.Println("listening for stats on http://" + *httpListenAddress)

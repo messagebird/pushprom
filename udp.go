@@ -31,6 +31,7 @@ func listenUDP(wg *sync.WaitGroup, ctx context.Context, stderrLogger *log.Logger
 			stderrLogger.Print(err)
 		}
 		defer wg.Done()
+		stdoutLogger.Println("udp listener is now offline")
 	}(serverConn, wg)
 
 	buf := make([]byte, 8192)
