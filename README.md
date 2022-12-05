@@ -7,6 +7,13 @@ Pushprom is a proxy (HTTP/UDP) to the [Prometheus](https://prometheus.io/) Go cl
 
 Prometheus doesn't offer a PHP client and PHP clients are hard to implement because they would need to keep track of state and PHP setups generally don't encourage that. That's why we built Pushprom.
 
+## Deprendencies
+
+- [make](https://www.gnu.org/software/make/)
+- [golang](https://go.dev/)
+- [docker](https://www.docker.com/)
+- [github-release](https://cli.github.com/manual/gh_release_create)
+
 ## Installing
 
 Execute the following command:
@@ -15,12 +22,27 @@ Execute the following command:
 go get -u github.com/messagebird/pushprom
 ```
 
-Or, alternatively, to build a Docker container:
+To build amd64/linux binary:
+```bash
+make release_linux
+```
+
+To build os & platform dependent native binary:
+```bash
+make native
+```
+
+To build using Docker container:
 
 ```bash
 make container
 ```
 
+## Release
+
+```bash
+VERSION=1.0.9 ./release.sh
+```
 
 ## Usage
 
@@ -40,8 +62,6 @@ $ pushprom -h
 Usage of bin/pushprom:
   -http-listen-address string
         The address to listen on for http stat and telemetry requests. (default ":9091")
-  -log-level string
-        Log level: debug, info (default), warn, error, fatal. (default "info")
   -udp-listen-address string
         The address to listen on for udp stats requests. (default ":9090")
 ```

@@ -5,46 +5,69 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	stderrLogger "log"
+	stdoutLogger "log"
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 )
 
 var (
-	logLevel          = flag.String("log-level", "info", "Log level: debug, info (default), warn, error, fatal.")
 	udpListenAddress  = flag.String("udp-listen-address", "0.0.0.0:9090", "The address to listen on for udp stats requests.")
 	httpListenAddress = flag.String("http-listen-address", "0.0.0.0:9091", "The address to listen on for http stat and telemetry requests.")
 )
 
 func main() {
 	flag.Parse()
-	ctx, cancel := context.WithCancel(context.Background())
 
+	stderrLogger.SetOutput(os.Stderr)
+	stdoutLogger.SetOutput(os.Stdout)
+
+	errrorLogger := stderrLogger.Default()
+	infoLogger := stdoutLogger.Default()
+
+	infoLogger.Print("welcome to messagebird/pushprom")
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	var err error
 
 	*udpListenAddress, err = ListenAddress(*udpListenAddress)
 	if err != nil {
-		log.Fatalf(err.Error())
+		errrorLogger.Fatalf(err.Error())
 	}
 
 	*httpListenAddress, err = ListenAddress(*httpListenAddress)
 	if err != nil {
-		log.Fatalf(err.Error())
+		errrorLogger.Fatalf(err.Error())
 	}
 
-	go listenUDP(ctx)
-	go listenHTTP(ctx)
+	infoLogger.Print("starting listeners")
 
-	handleSIGTERM(cancel)
+	var wg sync.WaitGroup
+
+	go listenUDP(&wg, ctx, errrorLogger, infoLogger)
+	go listenHTTP(&wg, ctx, errrorLogger, infoLogger)
+	wg.Add(2)
+
+	handleSIGTERM(&wg, cancel, infoLogger)
 }
 
-func handleSIGTERM(cancel func()) {
+func handleSIGTERM(wg *sync.WaitGroup, cancel func(), infoLogger *log.Logger) {
 	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, syscall.SIGTERM)
+	signal.Notify(sigc, syscall.SIGTERM, os.Interrupt)
 	<-sigc
+	infoLogger.Println("received SIGTERM, will terminate")
 	cancel()
+	defer close(sigc)
+
+	infoLogger.Println("waiting for all servers to gracefully terminate")
+	wg.Wait()
+	time.Sleep(1 * time.Second)
+	infoLogger.Println("all goroutines gracefully finished")
 }
 
 // ListenAddress Format a correct listen address
