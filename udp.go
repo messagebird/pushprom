@@ -45,7 +45,11 @@ func listenUDP(wg *sync.WaitGroup, ctx context.Context, stderrLogger *log.Logger
 		default:
 		}
 
-		serverConn.SetReadDeadline(time.Now().Add(2 * time.Second))
+		err = serverConn.SetReadDeadline(time.Now().Add(2 * time.Second))
+		if err != nil {
+			stderrLogger.Print("failed setting read UDP deadline: ", err)
+		}
+
 		n, _, err := serverConn.ReadFromUDP(buf)
 		if err != nil {
 			if !strings.Contains(err.Error(), "i/o timeout") {

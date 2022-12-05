@@ -60,7 +60,7 @@ func handleSIGTERM(wg *sync.WaitGroup, cancel func(), infoLogger *log.Logger) {
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, syscall.SIGTERM, os.Interrupt)
 	<-sigc
-	infoLogger.Println("received SIGTERM, will terminate")
+	infoLogger.Println("received termination/interrupt signal, will terminate")
 	cancel()
 	defer close(sigc)
 

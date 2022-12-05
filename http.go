@@ -86,7 +86,7 @@ func listenHTTP(wg *sync.WaitGroup, ctx context.Context, stderrLogger *log.Logge
 		stdoutLogger.Println("http listener is now offline")
 	}(wg)
 
-	stdoutLogger.Println("listening for stats on http://" + *httpListenAddress)
+	stdoutLogger.Println("listening for stats HTTP on http://" + *httpListenAddress)
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		stderrLogger.Fatalf("Failed to ListenAndServe: %v", err)
 	}
