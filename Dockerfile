@@ -1,5 +1,4 @@
-FROM golang:alpine as build-env
-# All these steps will be cached
+FROM golang:1.17-alpine as build-env
 
 RUN apk add git
 RUN mkdir /pushprom

@@ -27,8 +27,7 @@ mkdir -p ${BIN_DIR}
 build_for linux amd64
 build_for darwin amd64
 
-docker build -t ${USER}/${REPO}:${VERSION} .
-
+DOCKER_BUILDKIT=1 docker build -t ${USER}/${REPO}:${VERSION} .
 
 git tag -a $VERSION -m "version $VERSION"
 

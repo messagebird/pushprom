@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/messagebird/pushprom/delta"
@@ -43,8 +45,8 @@ func (httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func listenHTTP(ctx context.Context) {
-	log.Println("exposing metrics on http://" + *httpListenAddress + "/metrics\n")
+func listenHTTP(wg *sync.WaitGroup, ctx context.Context, stderrLogger *log.Logger, stdoutLogger *log.Logger) {
+	stdoutLogger.Println("exposing metrics on http://" + *httpListenAddress + "/metrics")
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
@@ -61,19 +63,31 @@ func listenHTTP(ctx context.Context) {
 
 	mux.HandleFunc("/", postHandler)
 
-	server := http.Server{Addr: *httpListenAddress, Handler: mux}
+	server := http.Server{
+		// see https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
+		WriteTimeout:      10 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		Addr:              *httpListenAddress,
+		Handler:           mux,
+	}
 
-	go func() {
+	go func(wg *sync.WaitGroup) {
 		<-ctx.Done()
 
-		servCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		stdoutLogger.Println("shutting down http listener on " + *httpListenAddress)
+
+		servCtx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 		err := server.Shutdown(servCtx)
 		if err != nil {
-			log.Print(err)
+			stderrLogger.Fatalf("http listener failed to shutdown gracefully: %v", err)
 		}
 		cancel()
-	}()
+		defer wg.Done()
+		stdoutLogger.Println("http listener is now offline")
+	}(wg)
 
-	log.Println("listening for stats on http://" + *httpListenAddress)
-	log.Fatal(server.ListenAndServe())
+	stdoutLogger.Println("listening for stats HTTP on http://" + *httpListenAddress)
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		stderrLogger.Fatalf("Failed to ListenAndServe: %v", err)
+	}
 }
